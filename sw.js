@@ -1,6 +1,6 @@
 // Nombre del caché
-const CACHE_NAME_STATIC = 'static-v1';
-const CACHE_NAME_DYNAMIC = 'dynamic-v1';
+const CACHE_NAME_STATIC = 'static-v2';
+const CACHE_NAME_DYNAMIC = 'dynamic-v2';
 const CACHE_NAME_INMUTABLE = 'inmutable-v1';
 
 // Archivos a cachear
@@ -43,6 +43,10 @@ self.addEventListener('activate', event => {
                 if (key !== CACHE_NAME_STATIC && key.includes('static')) {
                     return caches.delete(key);
                 }
+
+                if (key !== CACHE_NAME_DYNAMIC && key.includes('dynamic')) {
+                    return caches.delete(key);
+                }
             })
         );
     });
@@ -65,14 +69,33 @@ self.addEventListener('fetch', event => {
 
 // SYNC: Recuperamos conexion a internet
 self.addEventListener('sync', event => {
-
+    if (event.tag === 'sync-data') {
+        event.waitUntil(syncData());
+    }
 });
+
+async function syncData() {
+    try {
+        const response = await fetch('/path/to/api');
+        const data = await response.json();
+        // Procesa los datos obtenidos
+        console.log('Datos sincronizados:', data);
+    } catch (error) {
+        console.error('Error al sincronizar datos:', error);
+    }
+}
 
 
 
 // Controlador de Notifcaciones PUSH
 self.addEventListener('push', event => {
 
-	console.log("Notificaciones recibidas");
+	const title = 'Nueva notificación';
+    const options = {
+        body: 'Tienes un nuevo mensaje.',
+        icon: '/icon.png',
+        badge: '/badge.png'
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
 
 })

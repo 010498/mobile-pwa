@@ -49,12 +49,15 @@
                         <button type="submit" class="form-control form-control-sm btn-info"><i class="fa fa-search" aria-hidden="true"></i> CONSULTAR</button>
                     </div>
                 </div>
+
             </form>
+            <!-- Espacio para agregar el spinner  -->
+            <div id="spinner" class="spinner" ></div>
         </div>
     </div> 
 
     <!-- MAP -->
-    <div class="x_panel">
+    <div class="x_panel" id="x_map" style="display: none;">
         <div class="row">
             <div class="col-md-12">
                 <div id="map"></div>
@@ -63,11 +66,23 @@
     </div>
 
     <!-- INFORMACION DE LA TABLA -->
-     <div class="x_panel">
+     <div class="x_panel" id="x_tb" style="display: none;">
         <div class="clearfix"></div>
         <div class="x_content">
-            <div class="col-md-12" id="div-tb">
-                <table id="datatable-fixed-header" class="table table-bordered" >
+            <div class="col-md-12 div-tb">
+                <table class="table table-bordered datatable-fixed-header">
+                    <thead>
+                        <tr>
+                            <th>Desplazamiento</th>
+                            <th>Horas Operacion ( H:m )</th>
+                            <th>Horas Ralenti ( H:m )</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-resumenDesplazamiento"></tbody>
+                </table>
+            </div>
+            <div class="col-md-12 div-tb" >
+                <table  class="table table-bordered datatable-fixed-header" >
                     <thead>
                         <tr>
                             <th>Fecha</th>

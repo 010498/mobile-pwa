@@ -1,5 +1,13 @@
 // Configurar datetimepickers de forma unificada
 var tabla_datos;
+var map = null;
+const spinner = document.getElementById('spinner');
+
+// Crear funciones para ocultar o mostrar el spinner mientras carga 
+// Funciones para mostrar y ocultar el spinner
+function showSpinner() { spinner.style.display = 'block'; }
+function hideSpinner() { spinner.style.display = 'none'; }
+
 function configureDatePickers() {
     ['#fechaInicial', '#fechaFinal'].forEach(id => {
         $(id).datetimepicker({ format: 'YYYY-MM-DD', defaultDate: moment() });
@@ -21,11 +29,15 @@ async function cargarPlacas() {
     }
 }
 
-// Inicializar el mapa y trazar recorrido
+
+
+// Trazar recorrido
 function initMap(data) {
     const directionAngles = { 'N': 0, 'NE': 45, 'E': 90, 'SE': 135, 'S': 180, 'SO': 225, 'O': 270, 'NO': 315 };
     const bounds = new google.maps.LatLngBounds();
-    const map = new google.maps.Map(document.getElementById("map"), {
+    
+    // Inicializar el mapa
+    map = new google.maps.Map(document.getElementById("map"), {
         zoom: 3,
         center: { lat: 4.4039698, lng: -75.164008 },
         mapTypeId: "terrain",
@@ -78,6 +90,8 @@ function initMap(data) {
 
     map.fitBounds(bounds);
     flightPath.setMap(map);
+    window.centerZoom = centerZoom;
+
 }
 
 // Generar contenido de la ventana de información
@@ -98,6 +112,7 @@ async function handleFormSubmit(e) {
     e.preventDefault();
 
     const ajaxUrl = `${base_url}historico/cargar_recorrido`;
+    const ajaxUrlResumen = `${base_url}historico/cargar_resumen`;
     const movil = document.querySelector('#select-placa').value;
 
     if (movil == 0) {
@@ -105,21 +120,40 @@ async function handleFormSubmit(e) {
         return;
     }
 
+    showSpinner();
+
     try {
+        
         const formData = new FormData(form);
-        const response = await fetch(ajaxUrl, { method: 'POST', body: formData });
-        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+        const [response, responseResumen] = await Promise.all([
+            fetch(ajaxUrl, { method: 'POST', body: formData }),
+            fetch(ajaxUrlResumen, { method: 'POST', body: formData })
+        ]);
+
+        if (!response.ok) throw new Error("Error en la respuesta del servidor para cargar recorrido");
+        if (!responseResumen.ok) throw new Error("Error en la respuesta del servidor para cargar resumen");
 
         const jsData = await response.json();
-        if (jsData.status) {
+        const jsDataResumen = await responseResumen.json();
+
+        if (jsData.status && jsDataResumen.status) {
             initMap(jsData.data); // Cargar informacion del mapa cuando se ejecuta la accion
             cargar_tabla(jsData.data);
+            mostrar_resumen_desplazamiento(jsDataResumen.data)
+            $('#x_map').show();
+            $('#x_tb').show();
+           
         } else {
-            alert("No se encontraron datos para mostrar el recorrido");
+            alert("No se encontraron datos para mostrar el recorrido o el resumen");
         }
     } catch (error) {
         console.error("Error al procesar la solicitud:", error);
+        alert("Ocurrió un error al procesar la solicitud. Por favor, inténtelo de nuevo.");
+    } finally {
+        // Cerrar el Spinner cuando se termina de ejecutar la funcion
+        hideSpinner();
     }
+    
 }
 
 // Inicializar eventos al cargar la página
@@ -130,15 +164,37 @@ function init() {
     form.onsubmit = handleFormSubmit;
 }
 
+// Funcion que permite cargar la informacion en la tabla mostrando el resumen del desplazamiento
+function mostrar_resumen_desplazamiento(data)
+{
+    
+    let tableBody = document.getElementById('tbody-resumenDesplazamiento');
+    let rows = '';
+    
+
+    if( !data || data.length == 0){
+        tableBody.innerHTML = rows;
+        return;
+    }
+
+    rows += `<tr>
+        <td>${data.desplazamiento} KM</td>
+        <td>${data.operacion}</td>
+        <td>${data.ralenti}</td>
+    </tr>`;
+
+    tableBody.innerHTML = rows; // Actualiza todo el contenido de la tabla
+}
+
 // Funcion que permite cargar la informacion en la tabla
 function cargar_tabla(data) {
     let tableBody = document.getElementById('tbody');
     let rows = '';
 
     for (let i = 0; i < data.length; i++) {
-        rows += `<tr>
+        rows += `<tr class="custom-info-window">
             <td>${data[i].fecha_gps}</td>
-            <td>${data[i].posicion}</td>
+            <td onclick="centerZoom(${data[i].latitud}, ${data[i].longitud})">${data[i].posicion}</td>
             <td>${data[i].ignicion}</td>
             <td>${data[i].velocidad} KM/H</td>
             <td>${data[i].evento}</td>
@@ -148,7 +204,15 @@ function cargar_tabla(data) {
     tableBody.innerHTML = rows; // Actualiza todo el contenido de la tabla
 }
 
+// Funcion que permite centrar y hacer zoom en el mapa
+function centerZoom(lat, lng) {
+    if(map){
+        map.setCenter(new google.maps.LatLng(lat,lng)); 
+        map.setZoom(18);
+    }
+}
 
 // Variables y eventos globales
 const form = document.querySelector('#form-historico');
 window.addEventListener('load', init);
+

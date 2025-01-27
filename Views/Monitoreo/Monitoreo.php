@@ -1,6 +1,7 @@
 <?php 
  	//Informacion del encabezado
 	headerAdmin($data);
+  getModal('modelStreetView', $data);
 ?>
 
 <!-- Contenido de la plataforma INICIO -->
@@ -8,15 +9,25 @@
 
   <!-- Agregar btn flotante -->
    <div class="contenedor">
-        <button class="btn-flotante-inicio btn btn-round btn-primary " id="btn-toggle-inicio"><i class="fa fa-home"></i></button>
+        <button class="btn-flotante-inicio btn btn-round btn-primary " id="btn-toggle-inicio"><i class="fa fa-home" name="btn-inicio"></i></button>
         <button class="btn-flotante btn btn-round btn-primary " id="btn-toggle">+</button>
         <div id="info" class="info">
             <div id="info-list"></div>
         </div>
    </div>
 
+   <!-- Spinner que permite mostrar que se estar cargando la informa -->
+    <div id="spinner" class="spinner"></div>
    <!-- Informacion del mapa -->
     <div id="map"></div>
+    <div>
+      <label for="layer-switcher" style="display:none">Selecciona una capa:</label>
+      <select id="layer-switcher" class="form-control form-control-sm">>
+        <option value="terrain">Relieve</option>
+        <option value="satellite">Satélite</option>
+        <option value="traffic">Tráfico</option>
+      </select>
+    </div>
  </div>
 
  </div>

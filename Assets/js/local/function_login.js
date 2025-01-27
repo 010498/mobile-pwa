@@ -1,58 +1,54 @@
+
 // Permite la recopilacion de la informacion del usuario para el ingreso a la plataforma
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.querySelector('#form-login')) {
+        let form = document.querySelector('#form-login');
 
-document.addEventListener('DOMContentLoaded', function(){
+        form.onsubmit = async function (e) {
+            e.preventDefault();
 
-	if(document.querySelector('#form-login')){
+            let user = document.querySelector('#user-info').value;
+            let pass = document.querySelector('#pass-info').value;
 
-		let form = document.querySelector('#form-login');
+            if (user === "" || pass === "") {
+                alert("Favor ingresar todos los campos");
+                return false;
+            }
 
-		form.onsubmit = function(e){
-			e.preventDefault();
+            try {
+                const ajaxUrl = base_url + "Home/login";
 
-			let user = document.querySelector('#user-info').value;
-			let pass = document.querySelector('#pass-info').value;
+                // Crear un objeto FormData con los datos del formulario
+                const formData = new FormData(form);
 
+                // Realizar la solicitud con fetch
+                const response = await fetch(ajaxUrl, {
+                    method: 'POST',
+                    body: formData
+                });
 
-			if(user == "" || pass == ""){
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.statusText}`);
+                }
 
-				alert("Favor ingresar todos los campos");
-				return false;
+                const objData = await response.json();
 
-			}else{
-
-				var request = (window.XMLHttpRequest) ? new XMLHttpRequest(): new ActiveXObject('Microsoft.XMLHTTP');
-				var ajaxUrl = base_url+"Home/login";
-				var formData = new FormData(form);				
-				request.open("POST", ajaxUrl, true);
-				request.send(formData);
-				
-				request.onreadystatechange = function(){
-					if(request.readyState == 4 && request.status == 200){
-
-						var objData = JSON.parse(request.responseText);
-						
-						if(objData.status){
-
-							$("#info-mensaje").html(objData.msg);
-							window.location = base_url+"monitoreo";
-							
-						}else{
-
-							$("#info-mensaje").html(objData.msg);
-							document.querySelector('#user-info').value = "";
-							document.querySelector('#pass-info').value = "";
-
-							return false;
-						}
-						
-					}
-				}
-
-			}
-
-		}
-	}
+                if (objData.status) {
+                    // Redirigir al usuario
+                    window.location = base_url + "monitoreo";
+                } else {
+                    alert(objData.msg);
+                    document.querySelector('#user-info').value = "";
+                    document.querySelector('#pass-info').value = "";
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocurrió un error al procesar la solicitud. Intenta de nuevo más tarde.');
+            }
+        };
+    }
 });
+
 
 // Funcion que permite visualizar la informacion de la contraseña
 function togglePasswordVisibility() {

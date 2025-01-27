@@ -1,11 +1,21 @@
 {
-	"lang": "es",
-    "theme_color": "#fff",
-    "background_color": "#fff",
+    "background_color": "#04129e",
     "display": "standalone",
+    "id": "/?homescreen=1",
     "start_url": "http://localhost/demos/pwa/",
+    "scope": "http://localhost/",
     "name": "STAR SEGUIMIENTO Y CONTROL",
     "short_name": "STAR",
+    "description": "Aplicación de seguimiento y control de vehículos",
+    "lang": "es",
+    "orientation": "portrait",
+    "theme_color": "#04129e",
+    "display_override": [
+        "window-controls-overlay",
+        "standalone",
+        "browser"
+    ],
+	
     "icons": [
         {
             "src": "http://localhost/demos/pwa/Assets/img/icons/icon-192x192.png",
@@ -42,6 +52,10 @@
             "sizes": "1080x1920",
             "type": "image/png"
         }
-    ]
+    ],
+    
+    "launch_handler": {
+        "client_mode": "navigate-new"
+    }
 	
 }
